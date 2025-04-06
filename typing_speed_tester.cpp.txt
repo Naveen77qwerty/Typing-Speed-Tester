@@ -1,0 +1,192 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <chrono>
+#include <random>
+#include <algorithm>
+#include <thread>
+
+// Class to generate random sentences for typing tests
+class WordGenerator
+{
+private:
+    std::vector<std::string> sentences = {
+        "The quick brown fox jumps over the lazy dog. While the dog sleeps peacefully in the afternoon sun, "
+        "the clever fox continues its journey through the forest, looking for new adventures.",
+
+        "Programming is the art of telling computers what to do. It requires patience, logic, and creativity. "
+        "The best programmers are those who can break down complex problems into simple, manageable steps.",
+
+        "In the bustling city streets, people hurry about their daily lives. Some carry briefcases, "
+        "others hold coffee cups, and a few pause to admire the architecture of the old buildings.",
+
+        "Learning to type quickly and accurately is an essential skill in today's digital world. "
+        "With practice and dedication, anyone can improve their typing speed and reduce their error rate.",
+
+        "The ancient library held countless stories within its walls. Dusty tomes lined the shelves, "
+        "each containing worlds of knowledge waiting to be discovered by curious minds."};
+
+    // Add random number generation members
+    std::random_device rd;
+    std::mt19937 gen;
+    std::uniform_int_distribution<> dis;
+
+public:
+    // Add constructor to initialize the random number generator
+    WordGenerator() : gen(rd()), dis(0, sentences.size() - 1) {}
+
+    std::string getRandomSentence()
+    {
+        return sentences[dis(gen)];
+    }
+};
+
+// Class to handle timing functionality
+class Timer
+{
+private:
+    std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock> endTime;
+
+public:
+    void start()
+    {
+        startTime = std::chrono::high_resolution_clock::now();
+    }
+
+    void stop()
+    {
+        endTime = std::chrono::high_resolution_clock::now();
+    }
+
+    double getElapsedTimeInSeconds()
+    {
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
+        return duration.count() / 1000.0;
+    }
+};
+
+// Class to store and track player statistics
+class Player
+{
+private:
+    std::vector<double> wpmHistory;
+    std::vector<double> accuracyHistory;
+
+public:
+    void addResult(double wpm, double accuracy)
+    {
+        wpmHistory.push_back(wpm);
+        accuracyHistory.push_back(accuracy);
+    }
+
+    double getAverageWPM() const
+    {
+        if (wpmHistory.empty())
+            return 0.0;
+        return std::accumulate(wpmHistory.begin(), wpmHistory.end(), 0.0) / wpmHistory.size();
+    }
+
+    double getAverageAccuracy() const
+    {
+        if (accuracyHistory.empty())
+            return 0.0;
+        return std::accumulate(accuracyHistory.begin(), accuracyHistory.end(), 0.0) / accuracyHistory.size();
+    }
+};
+
+// Class to manage the typing test
+class TypingTest
+{
+private:
+    WordGenerator wordGen;
+    Timer timer;
+    Player player;
+
+    double calculateWPM(const std::string &text, double timeInSeconds)
+    {
+        int wordCount = std::count(text.begin(), text.end(), ' ') + 1;
+        return (wordCount / timeInSeconds) * 60.0;
+    }
+
+    double calculateAccuracy(const std::string &original, const std::string &typed)
+    {
+        int matches = 0;
+        int totalChars = std::max(original.length(), typed.length());
+
+        // Count matching characters
+        for (size_t i = 0; i < std::min(original.length(), typed.length()); ++i)
+        {
+            if (original[i] == typed[i])
+                matches++;
+        }
+
+        // If typed text is longer than original, penalize extra characters
+        if (typed.length() > original.length())
+        {
+            matches -= (typed.length() - original.length());
+        }
+
+        // Prevent negative accuracy
+        matches = std::max(0, matches);
+
+        return (static_cast<double>(matches) / totalChars) * 100.0;
+    }
+
+public:
+    void runTest()
+    {
+        std::string testSentence = wordGen.getRandomSentence();
+        std::string userInput;
+
+        // Clear screen and add better formatting
+        std::cout << "\n================================================\n";
+        std::cout << "Type the following sentence:\n";
+        std::cout << "------------------------------------------------\n";
+        std::cout << testSentence << "\n";
+        std::cout << "------------------------------------------------\n\n";
+        std::cout << "Press Enter when ready to start typing...\n";
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        timer.start();
+        std::cout << "Start typing: ";
+        std::getline(std::cin, userInput);
+        timer.stop();
+
+        double timeElapsed = timer.getElapsedTimeInSeconds();
+        double wpm = calculateWPM(testSentence, timeElapsed);
+        double accuracy = calculateAccuracy(testSentence, userInput);
+
+        player.addResult(wpm, accuracy);
+
+        // Add visual separation for results
+        std::cout << "\n================================================\n";
+        std::cout << "Results:\n";
+        std::cout << "------------------------------------------------\n";
+        std::cout << "Time taken: " << timeElapsed << " seconds\n";
+        std::cout << "WPM: " << wpm << "\n";
+        std::cout << "Accuracy: " << accuracy << "%\n";
+        std::cout << "Average WPM: " << player.getAverageWPM() << "\n";
+        std::cout << "Average Accuracy: " << player.getAverageAccuracy() << "%\n";
+        std::cout << "================================================\n";
+    }
+};
+
+int main()
+{
+    TypingTest test;
+    char choice;
+
+    std::cout << "Welcome to the Typing Speed Tester!\n";
+
+    do
+    {
+        test.runTest();
+        std::cout << "\nWould you like to try again? (y/n): ";
+        std::cin >> choice;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    } while (tolower(choice) == 'y');
+
+    std::cout << "Thank you for using the Typing Speed Tester!\n";
+    return 0;
+}

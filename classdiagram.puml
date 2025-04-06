@@ -1,0 +1,134 @@
+@startuml Typing Speed Tester
+
+package "core" {
+  class TypingTest {
+    - wordGenerator: WordGenerator
+    - timer: Timer
+    - currentUser: User
+    - scoringStrategy: ScoringStrategy
+    - difficultyManager: DifficultyManager
+    - analyzer: TestAnalyzer
+    - scanner: Scanner
+    + runTest(): void
+    + showPerformanceReport(): void
+    + setDifficulty(level: DifficultyLevel): void
+    + setCurrentUser(user: User): void
+    + {static} main(args: String[]): void
+  }
+  
+  class WordGenerator {
+    - words: List<String>
+    - random: Random
+    - currentDifficulty: DifficultyLevel
+    + getRandomSentence(): String
+    + setDifficulty(difficulty: DifficultyLevel): void
+    + getDifficulty(): DifficultyLevel
+  }
+  
+  class Timer {
+    - startTime: long
+    - endTime: long
+    + start(): void
+    + stop(): void
+    + getElapsedTimeInSeconds(): double
+  }
+}
+
+package "models" {
+  class User {
+    - username: String
+    - history: List<TestResult>
+    + getUsername(): String
+    + getHistory(): List<TestResult>
+    + addTestResult(result: TestResult): void
+    + getAverageWPM(): double
+    + getAverageAccuracy(): double
+    + getBestResult(): TestResult
+  }
+  
+  class TestResult {
+    - wpm: double
+    - accuracy: double
+    - timeInSeconds: double
+    - timestamp: LocalDateTime
+    - originalText: String
+    - typedText: String
+    - difficultyLevel: DifficultyLevel
+    + getWpm(): double
+    + getAccuracy(): double
+    + getTimeInSeconds(): double
+    + getTimestamp(): LocalDateTime
+    + getOriginalText(): String
+    + getTypedText(): String
+    + getDifficultyLevel(): DifficultyLevel
+  }
+}
+
+package "services" {
+  interface ScoringStrategy {
+    + calculateWPM(text: String, timeInSeconds: double): double
+    + calculateAccuracy(original: String, typed: String): double
+  }
+  
+  class StandardScoring {
+    + calculateWPM(text: String, timeInSeconds: double): double
+    + calculateAccuracy(original: String, typed: String): double
+  }
+  
+  class DifficultyManager {
+    - sentenceLengthMap: Map<DifficultyLevel, Integer>
+    - wordGenerator: WordGenerator
+    + setDifficulty(level: DifficultyLevel): void
+    + getCurrentDifficulty(): DifficultyLevel
+    + getMaxSentenceLength(): int
+  }
+}
+
+package "analysis" {
+  abstract class TestAnalyzer {
+    + {abstract} generatePerformanceReport(user: User): String
+    + {abstract} analyzeRealTime(original: String, typed: String): String
+    # calculateAverage(values: List<Double>): double
+    # calculateImprovement(results: List<TestResult>): double
+    # getMostRecentDifficultyLevel(results: List<TestResult>): DifficultyLevel
+  }
+  
+  class StandardAnalyzer {
+    - RECENT_TESTS_COUNT: int
+    + generatePerformanceReport(user: User): String
+    + analyzeRealTime(original: String, typed: String): String
+    - findMostCommonErrors(results: List<TestResult>): Map<Character, Integer>
+  }
+}
+
+package "enums" {
+  enum DifficultyLevel {
+    EASY
+    MEDIUM
+    HARD
+  }
+}
+
+package "exceptions" {
+  class InvalidInputException {
+  }
+}
+
+' Relationships
+TypingTest --> WordGenerator
+TypingTest --> Timer
+TypingTest --> User
+TypingTest --> ScoringStrategy
+TypingTest --> DifficultyManager
+TypingTest --> TestAnalyzer
+
+DifficultyManager --> WordGenerator
+User --> "*" TestResult
+TestResult --> DifficultyLevel
+
+StandardScoring ..|> ScoringStrategy
+StandardAnalyzer --|> TestAnalyzer
+
+InvalidInputException --|> Exception
+
+@enduml
