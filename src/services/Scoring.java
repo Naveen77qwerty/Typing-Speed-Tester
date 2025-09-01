@@ -1,7 +1,7 @@
 package services;
 
-// services/StandardScoring.java
-public class StandardScoring implements ScoringStrategy {
+// services/Scoring.java
+public class Scoring implements ScoringStrategy {
     @Override
     public double calculateWPM(String text, double time) {
         int words = text.split("\\s+").length;
@@ -27,7 +27,7 @@ public class StandardScoring implements ScoringStrategy {
         
         // Prevent negative accuracy
         matches = Math.max(0, matches);
-        
+        //returning accuracy as a percentage
         return (double) matches / totalChars * 100.0;
     }
 }

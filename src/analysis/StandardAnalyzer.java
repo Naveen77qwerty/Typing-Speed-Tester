@@ -11,23 +11,24 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 
 public class StandardAnalyzer extends TestAnalyzer {
-    private static final int RECENT_TESTS_COUNT = 5;
-    
+    private static final int RECENT_TESTS_COUNT = 5;//max limit of recent tests to show in report is 5
     /**
      * Generates a comprehensive performance report for a user based on their test history.
      * The report includes overall statistics, best performance, common errors, and recent tests.
-     * 
-     * @param user The user for whom to generate the report
-     * @return A formatted performance report as a string
+     * The user for whom to generate the report
+     * return A formatted performance report as a string
      */
     @Override
     public String generatePerformanceReport(User user) {
-        List<TestResult> allResults = user.getHistory();
+        List<TestResult> allResults = user.getHistory();  //method call form user class to get all test results to check for history
         if (allResults.isEmpty()) {
             return "No test history available for " + user.getUsername();
         }
         
-        StringBuilder report = new StringBuilder();
+        StringBuilder report = new StringBuilder();  
+        /*java.lang.StringBuilder is used to create a mutable string
+         which is more efficient than using String concatenation in a loop.
+         so this is used ot get the performance result when asked for */
         report.append("Performance Report for ").append(user.getUsername()).append("\n");
         report.append("=========================================\n");
         
@@ -92,10 +93,9 @@ public class StandardAnalyzer extends TestAnalyzer {
      *   - ^: error (incorrect character)
      *   - ~: missing letter
      *   - #: extra letter
-     * 
-     * @param original The original text that should be typed
-     * @param typed The text that was actually typed by the user
-     * @return Analysis result as a string
+     *  The original text that should be typed
+     *  The text that was actually typed by the user
+     *  Analysis result as a string
      */
     @Override
     public String analyzeRealTime(String original, String typed) {
@@ -115,7 +115,12 @@ public class StandardAnalyzer extends TestAnalyzer {
                 // Compare words of same length
                 if (originalWords[i].length() == typedWords[i].length()) {
                     for (int j = 0; j < originalWords[i].length(); j++) {
-                        if (originalWords[i].charAt(j) == typedWords[i].charAt(j)) {
+                        //checking for correct charater
+
+                        /*if wrong retrun ^
+                        * else nothing 
+                        */
+                        if (originalWords[i].charAt(j) == typedWords[i].charAt(j)) { 
                             analysis.append(" ");
                         } else {
                             analysis.append("^");
@@ -147,7 +152,7 @@ public class StandardAnalyzer extends TestAnalyzer {
                         }
                     }
                     
-                    // Mark extra letters
+                    // Mark extra letters typed will return #
                     for (int j = 0; j < (typedWords[i].length() - originalWords[i].length()); j++) {
                         analysis.append("#");
                     }
@@ -240,7 +245,7 @@ public class StandardAnalyzer extends TestAnalyzer {
      * @param results List of test results to analyze
      * @return Map containing characters and the frequency of errors for each
      */
-    private Map<Character, Integer> findMostCommonErrors(List<TestResult> results) {
+    public Map<Character, Integer> findMostCommonErrors(List<TestResult> results) {
         Map<Character, Integer> errorFrequency = new HashMap<>();
         
         for (TestResult result : results) {

@@ -19,7 +19,7 @@ public class TypingTest {
     public TypingTest() {
         this.wordGenerator = new WordGenerator();
         this.timer = new Timer();
-        this.scoringStrategy = new StandardScoring();
+        this.scoringStrategy = new Scoring();
         this.difficultyManager = new DifficultyManager(wordGenerator);
         this.analyzer = new StandardAnalyzer();
         this.scanner = new Scanner(System.in);
@@ -31,6 +31,10 @@ public class TypingTest {
     
     public void setCurrentUser(User user) {
         this.currentUser = user;
+    }
+    
+    public void setScoringStrategy(ScoringStrategy strategy) {
+        this.scoringStrategy = strategy;
     }
     
     public void runTest() {
@@ -154,6 +158,30 @@ public class TypingTest {
                         break;
                     default:
                         System.out.println("Invalid selection. Please enter 1, 2, or 3.");
+                }
+            }
+            
+            // Choose scoring strategy
+            System.out.println("\nSelect scoring strategy:");
+            System.out.println("1. Standard");
+            System.out.println("2. Advanced (15% deduction per incorrect character)");
+            
+            boolean validStrategy = false;
+            while (!validStrategy) {
+                System.out.print("Your choice (1-2): ");
+                String strategyChoice = scanner.nextLine().trim();
+                
+                switch (strategyChoice) {
+                    case "1":
+                        test.setScoringStrategy(new Scoring());
+                        validStrategy = true;
+                        break;
+                    case "2":
+                        test.setScoringStrategy(new AdvancedScoring());
+                        validStrategy = true;
+                        break;
+                    default:
+                        System.out.println("Invalid selection. Please enter 1 or 2.");
                 }
             }
             

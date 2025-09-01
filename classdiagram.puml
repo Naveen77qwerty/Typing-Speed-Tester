@@ -86,7 +86,7 @@ package "services" {
 
 package "analysis" {
   abstract class TestAnalyzer {
-    + {abstract} generatePerformanceReport(user: User): String
+    + {abstract} *generatePerformanceReport*(user: User): String
     + {abstract} analyzeRealTime(original: String, typed: String): String
     # calculateAverage(values: List<Double>): double
     # calculateImprovement(results: List<TestResult>): double
